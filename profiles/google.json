@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "name": "google",
+  "displayName": "Google",
+  "tagline": "Small changes, fast presubmits, nothing lands that lowers code health.",
+  "philosophy": "Code review exists to keep the codebase healthy over decades. A change must improve overall code health, even if it is not perfect.",
+  "loop": {
+    "max_cycles": 5,
+    "progress_stall_cycles": 2,
+    "flake_reruns": 3
+  },
+  "roles": {
+    "planner": "auto-large",
+    "spec_reviewer": "on",
+    "code_reviewer": "on",
+    "security_auditor": "overlay-only",
+    "memory_codifier": "on"
+  },
+  "gates": [
+    {
+      "id": "beyonce-rule",
+      "blocking": true,
+      "description": "If you liked the behavior, you shoulda put a test on it: any behavior change without a covering test blocks GREEN."
+    },
+    {
+      "id": "small-change",
+      "blocking": false,
+      "description": "Diff beyond ~400 changed lines: advise splitting into smaller increments; note it in the review."
+    },
+    {
+      "id": "code-health",
+      "blocking": true,
+      "description": "The reviewer verdict must state that the change improves or maintains overall code health."
+    },
+    {
+      "id": "flake-quarantine",
+      "blocking": true,
+      "description": "A test that passes only on retry is reported as FLAKY and quarantined in the report — never silently retried to green, never 'fixed' by the builder."
+    }
+  ],
+  "recommend": {
+    "default_fallback": true,
+    "signals": [
+      {
+        "kind": "file",
+        "patterns": ["WORKSPACE", "BUILD.bazel", "OWNERS", "CODEOWNERS"],
+        "weight": 3,
+        "evidence": "monorepo/ownership markers"
+      },
+      {
+        "kind": "file",
+        "patterns": ["pnpm-workspace.yaml", "turbo.json", "nx.json", "lerna.json"],
+        "weight": 2,
+        "evidence": "JS monorepo tooling"
+      }
+    ]
+  }
+}

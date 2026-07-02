@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "name": "stripe",
+  "displayName": "Stripe",
+  "tagline": "The API is forever — type the code incrementally, review the interface exhaustively, never break users.",
+  "philosophy": "External integrators must never break. Public surface changes get design review distinct from code review; type coverage only ratchets up; docs travel with the API.",
+  "loop": {
+    "max_cycles": 5,
+    "progress_stall_cycles": 2,
+    "flake_reruns": 3
+  },
+  "roles": {
+    "planner": "auto-large",
+    "spec_reviewer": "on",
+    "code_reviewer": "on",
+    "security_auditor": "overlay-only",
+    "memory_codifier": "on"
+  },
+  "gates": [
+    {
+      "id": "type-ratchet",
+      "blocking": true,
+      "description": "Conditional on existing type tooling: no file moves down a strictness level, and the diff's type coverage never decreases. New files start strict."
+    },
+    {
+      "id": "api-review",
+      "blocking": true,
+      "description": "Any change to the public surface (routes, exported symbols, response shapes, OpenAPI) requires a short design note from the builder covering naming, consistency with existing conventions, and versioning."
+    },
+    {
+      "id": "backward-compat",
+      "blocking": true,
+      "description": "Breaking changes to a public contract must be versioned or flagged; removing/renaming a public field without a migration path blocks GREEN."
+    },
+    {
+      "id": "docs-travel",
+      "blocking": true,
+      "description": "Public-surface changes without corresponding doc/OpenAPI updates are findings."
+    }
+  ],
+  "recommend": {
+    "default_fallback": false,
+    "signals": [
+      {
+        "kind": "file",
+        "patterns": ["openapi.yaml", "openapi.yml", "openapi.json", "swagger.yaml", "swagger.json"],
+        "weight": 4,
+        "evidence": "OpenAPI/Swagger spec present"
+      },
+      {
+        "kind": "dep",
+        "patterns": ["stripe", "braintree", "plaid", "adyen", "razorpay"],
+        "weight": 4,
+        "evidence": "payments/fintech dependencies"
+      },
+      {
+        "kind": "path_regex",
+        "patterns": ["(^|/)routes(/|$)", "(^|/)api(/|$)", "(^|/)endpoints(/|$)"],
+        "weight": 2,
+        "evidence": "API route directories"
+      },
+      {
+        "kind": "dep",
+        "patterns": ["fastapi", "express", "hono", "sinatra", "rails"],
+        "weight": 1,
+        "evidence": "API framework"
+      },
+      {
+        "kind": "dep",
+        "patterns": ["sorbet", "sorbet-runtime"],
+        "weight": 3,
+        "evidence": "gradual typing ratchet in use"
+      }
+    ]
+  }
+}

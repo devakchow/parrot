@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "name": "jane-street",
+  "displayName": "Jane Street",
+  "tagline": "Let the type system prove what it can; snapshot and property-test the rest; scale review depth to the risk of the file.",
+  "philosophy": "Make illegal states unrepresentable. The compiler is the first checker; golden outputs never change without explicit promotion; counterexamples become permanent regressions.",
+  "loop": {
+    "max_cycles": 5,
+    "progress_stall_cycles": 2,
+    "flake_reruns": 3
+  },
+  "roles": {
+    "planner": "auto-large",
+    "spec_reviewer": "on",
+    "code_reviewer": "on",
+    "security_auditor": "overlay-only",
+    "memory_codifier": "on"
+  },
+  "gates": [
+    {
+      "id": "warnings-as-errors",
+      "blocking": true,
+      "description": "Compiler/type-checker warnings in changed files are failures, not noise."
+    },
+    {
+      "id": "snapshot-promotion",
+      "blocking": true,
+      "description": "A changed snapshot/golden/expect output is never auto-accepted: the diff of old vs new output plus a written justification must appear in the report, or it blocks GREEN."
+    },
+    {
+      "id": "property-tests",
+      "blocking": false,
+      "description": "Algorithmic, parsing, or serialization code should carry property tests; shrunk counterexamples get pinned as named regression cases."
+    },
+    {
+      "id": "scrutiny-map",
+      "blocking": false,
+      "description": "Paths listed in .parrot/scrutiny.json (if present) are high-risk: touching them triggers an extra checker pass and deeper review."
+    }
+  ],
+  "recommend": {
+    "default_fallback": false,
+    "signals": [
+      {
+        "kind": "ext_share",
+        "extensions": [".ml", ".mli", ".hs", ".rs", ".fs", ".exs", ".ex"],
+        "min_share": 0.25,
+        "weight": 4,
+        "evidence": "strongly-typed functional codebase"
+      },
+      {
+        "kind": "file",
+        "patterns": ["dune-project", "stack.yaml", "*.cabal"],
+        "weight": 3,
+        "evidence": "OCaml/Haskell build files"
+      },
+      {
+        "kind": "path_regex",
+        "patterns": ["__snapshots__", "\\.snap$", "(^|/)golden(/|$)"],
+        "weight": 2,
+        "evidence": "snapshot/golden tests in repo"
+      },
+      {
+        "kind": "dep",
+        "patterns": ["insta", "ppx_expect", "quickcheck", "proptest"],
+        "weight": 3,
+        "evidence": "FP-ecosystem snapshot/property-testing libraries"
+      },
+      {
+        "kind": "dep",
+        "patterns": ["hypothesis", "fast-check"],
+        "weight": 1,
+        "evidence": "property-testing libraries"
+      }
+    ]
+  }
+}

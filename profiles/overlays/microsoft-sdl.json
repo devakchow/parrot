@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "name": "microsoft-sdl",
+  "displayName": "Microsoft SDL",
+  "type": "overlay",
+  "tagline": "Security is a phase-gate, not a review comment.",
+  "philosophy": "Security requirements are woven into every phase: threat-model at design time, blocking static analysis, secrets hygiene every cycle. Vulnerabilities are never traded off against features.",
+  "roles": {
+    "security_auditor": "on"
+  },
+  "gates": [
+    {
+      "id": "threat-model-note",
+      "blocking": true,
+      "description": "Any change touching auth, input parsing, crypto, or network handling requires a threat-model note from the builder: assets, entry points, what an attacker controls, mitigations."
+    },
+    {
+      "id": "sast-blocking",
+      "blocking": true,
+      "description": "Security-class static findings (injection, path traversal, insecure deserialization, weak crypto) are always blocking, never advisory."
+    },
+    {
+      "id": "secrets-scan",
+      "blocking": true,
+      "description": "Every cycle: no credentials, tokens, or keys in the diff; no secrets moved into code from config."
+    },
+    {
+      "id": "dependency-vetting",
+      "blocking": true,
+      "description": "Any manifest change gets a known-vulnerability check (using the project's existing audit tooling, e.g. npm audit / pip-audit / cargo audit, when present)."
+    },
+    {
+      "id": "security-bug-bar",
+      "blocking": true,
+      "description": "A security finding cannot be waived for feature progress; it is fixed or the run halts with the finding escalated."
+    }
+  ],
+  "recommend": {
+    "default_fallback": false,
+    "signals": [
+      {
+        "kind": "dep",
+        "patterns": ["bcrypt", "argon2", "jose", "passlib", "cryptography", "jsonwebtoken", "next-auth", "passport", "authlib", "oauth", "openssl"],
+        "weight": 3,
+        "evidence": "auth/crypto dependencies"
+      },
+      {
+        "kind": "path_regex",
+        "patterns": ["(^|/)auth", "login", "password", "token", "secret", "crypto", "session"],
+        "weight": 1,
+        "evidence": "auth/PII-adjacent paths"
+      }
+    ]
+  }
+}

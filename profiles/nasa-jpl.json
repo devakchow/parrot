@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "name": "nasa-jpl",
+  "displayName": "NASA/JPL",
+  "tagline": "If a rule can't be checked by a machine, it's a suggestion. Ship only what analyzers, assertions, and reviewers have all cleared.",
+  "philosophy": "Safety-critical discipline: zero warnings, bounded everything, an explicit written disposition for every finding. There is no 'minor' tier.",
+  "loop": {
+    "max_cycles": 5,
+    "progress_stall_cycles": 2,
+    "flake_reruns": 3
+  },
+  "roles": {
+    "planner": "on",
+    "spec_reviewer": "on",
+    "code_reviewer": "on",
+    "security_auditor": "on",
+    "memory_codifier": "on"
+  },
+  "gates": [
+    {
+      "id": "zero-warnings",
+      "blocking": true,
+      "description": "Compile/typecheck with maximum pedantry; a single warning in changed code blocks GREEN."
+    },
+    {
+      "id": "scrub-disposition",
+      "blocking": true,
+      "description": "EVERY reviewer finding gets an explicit builder response — fixed, or a written disagree-justification surfaced to the human. Nothing is silently dropped."
+    },
+    {
+      "id": "bounded-everything",
+      "blocking": true,
+      "description": "No unbounded loops, unbounded recursion, or post-init dynamic allocation in safety-flagged paths; all return values checked."
+    },
+    {
+      "id": "function-size",
+      "blocking": false,
+      "description": "Functions beyond ~60 lines in changed code are findings requiring justification."
+    },
+    {
+      "id": "assertion-density",
+      "blocking": false,
+      "description": "Touched functions should assert their pre/postconditions and invariants (target: two per function in C-like code); the reviewer counts them."
+    },
+    {
+      "id": "no-open-findings",
+      "blocking": true,
+      "description": "GREEN requires zero undispositioned findings. There is no merging with open findings."
+    }
+  ],
+  "recommend": {
+    "default_fallback": false,
+    "signals": [
+      {
+        "kind": "file",
+        "patterns": ["*.ino", "*.ld", "*.icf", "*.dts", "*.ioc"],
+        "weight": 4,
+        "evidence": "firmware/linker/board files"
+      },
+      {
+        "kind": "dep",
+        "patterns": ["freertos", "zephyr", "cmsis", "arm-none-eabi", "misra"],
+        "weight": 4,
+        "evidence": "embedded/RTOS toolchain"
+      },
+      {
+        "kind": "ext_share",
+        "extensions": [".c", ".h"],
+        "min_share": 0.5,
+        "weight": 2,
+        "evidence": "C-dominant codebase"
+      },
+      {
+        "kind": "path_regex",
+        "patterns": ["(^|/)firmware(/|$)", "(^|/)embedded(/|$)"],
+        "weight": 3,
+        "evidence": "firmware directories"
+      }
+    ]
+  }
+}

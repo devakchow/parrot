@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "name": "meta",
+  "displayName": "Meta",
+  "tagline": "Move fast with stable infra — automate the safety net so shipping stays continuous.",
+  "philosophy": "Velocity comes from automated guardrails, not caution. Decompose into stacked, individually verifiable diffs; block on new findings only; make every regression produce a permanent test.",
+  "loop": {
+    "max_cycles": 5,
+    "progress_stall_cycles": 2,
+    "flake_reruns": 3
+  },
+  "roles": {
+    "planner": "auto-large",
+    "spec_reviewer": "on",
+    "code_reviewer": "on",
+    "security_auditor": "overlay-only",
+    "memory_codifier": "on"
+  },
+  "gates": [
+    {
+      "id": "diff-stack",
+      "blocking": false,
+      "description": "Work lands as small, dependent increments; a cycle that changes many unrelated areas gets flagged for decomposition."
+    },
+    {
+      "id": "new-findings-only",
+      "blocking": true,
+      "description": "Static/lint findings block only when NEW relative to baseline; pre-existing debt is reported, never grown."
+    },
+    {
+      "id": "test-assurance",
+      "blocking": true,
+      "description": "Any new or modified test must build, pass consistently across the flake reruns, and test real behavior (no all-mock, no vacuous assertions)."
+    },
+    {
+      "id": "mutation-heuristic",
+      "blocking": false,
+      "description": "Advisory: if new tests would still pass with the fix reverted, they are weak — the checker notes when new tests never exercise the changed lines."
+    },
+    {
+      "id": "regression-postmortem",
+      "blocking": true,
+      "description": "Any regression caught mid-loop requires a mini-postmortem line in the ledger and a permanent regression test before GREEN."
+    }
+  ],
+  "recommend": {
+    "default_fallback": false,
+    "signals": [
+      {
+        "kind": "path_regex",
+        "patterns": ["(^|/)(ios|android)(/|$)", "\\.xcodeproj", "AndroidManifest\\.xml"],
+        "weight": 3,
+        "evidence": "mobile app code"
+      },
+      {
+        "kind": "dep",
+        "patterns": ["react-native", "expo", "react-dom", "next"],
+        "weight": 2,
+        "evidence": "product app stack"
+      },
+      {
+        "kind": "dep",
+        "patterns": ["launchdarkly", "statsig", "flagsmith", "unleash", "growthbook"],
+        "weight": 3,
+        "evidence": "feature-flag/experimentation SDK"
+      }
+    ]
+  }
+}

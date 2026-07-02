@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "name": "palantir",
+  "displayName": "Palantir",
+  "tagline": "Encode taste in tooling; humans review only logic.",
+  "philosophy": "Expensive review attention goes to program logic, never to style, syntax, or formatting — those are settled by tools. Maximal analyzer strictness with pragmatic ratchets for legacy.",
+  "loop": {
+    "max_cycles": 5,
+    "progress_stall_cycles": 2,
+    "flake_reruns": 3
+  },
+  "roles": {
+    "planner": "auto-large",
+    "spec_reviewer": "on",
+    "code_reviewer": "on",
+    "security_auditor": "overlay-only",
+    "memory_codifier": "on"
+  },
+  "gates": [
+    {
+      "id": "suppression-tax",
+      "blocking": true,
+      "description": "Every new lint/type suppression needs an inline justification comment, and the checker inventories all new suppressions in its report. Unjustified suppression blocks GREEN."
+    },
+    {
+      "id": "format-first",
+      "blocking": true,
+      "description": "If the project has a formatter, it runs before checks; style comments from reviewers are forbidden — style disagreement means the formatter config is wrong."
+    },
+    {
+      "id": "ratchet",
+      "blocking": true,
+      "description": "Strictness ratchets: changed files meet full strictness; legacy violations elsewhere are counted and must never grow."
+    },
+    {
+      "id": "exact-deps",
+      "blocking": true,
+      "description": "No unused imports or undeclared dependencies introduced by the diff."
+    },
+    {
+      "id": "atomic-commits",
+      "blocking": false,
+      "description": "One logical change per cycle with a real explanation of why, recorded in the ledger."
+    }
+  ],
+  "recommend": {
+    "default_fallback": false,
+    "signals": [
+      {
+        "kind": "file",
+        "patterns": ["build.gradle", "build.gradle.kts", "settings.gradle", "settings.gradle.kts", "checkstyle.xml"],
+        "weight": 3,
+        "evidence": "Gradle/Java service"
+      },
+      {
+        "kind": "dep",
+        "patterns": ["error_prone", "errorprone", "checkstyle", "spotless", "spotbugs"],
+        "weight": 4,
+        "evidence": "strict analyzer toolchain already configured"
+      },
+      {
+        "kind": "file_contains",
+        "file": "tsconfig.json",
+        "needle": "\"strict\": true",
+        "weight": 2,
+        "evidence": "strict TypeScript"
+      }
+    ]
+  }
+}
