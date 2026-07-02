@@ -1,0 +1,10 @@
+{
+  "name": "parrot",
+  "displayName": "Parrot",
+  "description": "Builder/checker agent loop: one agent implements, a separate agent verifies (tests, type checks, lint), and an orchestrator command cycles them until green. Hard stop rules: max 5 cycles, immediate halt on regression or test-weakening.",
+  "author": {
+    "name": "Devak"
+  },
+  "license": "MIT",
+  "keywords": ["loop", "tdd", "verification", "agents", "orchestration"]
+}

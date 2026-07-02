@@ -1,0 +1,14 @@
+{
+  "name": "parrot",
+  "description": "Builder/checker agent loop for Claude Code: implement, verify, fix until green, with hard stop rules.",
+  "owner": {
+    "name": "Devak"
+  },
+  "plugins": [
+    {
+      "name": "parrot",
+      "source": "./",
+      "description": "Builder/checker agent loop with hard stop rules (max cycles, regression halt, test-weakening halt)."
+    }
+  ]
+}
