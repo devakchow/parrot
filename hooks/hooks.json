@@ -53,6 +53,15 @@
     ],
     "SessionStart": [
       {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/scripts/session-banner.py\""
+          }
+        ]
+      },
+      {
         "matcher": "startup|clear",
         "hooks": [
           {
