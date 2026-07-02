@@ -2,7 +2,7 @@
   "name": "parrot",
   "description": "Builder/checker agent loop for Claude Code: implement, verify, fix until green, with hard stop rules.",
   "owner": {
-    "name": "Devak"
+    "name": "Devak Charapalle"
   },
   "plugins": [
     {
