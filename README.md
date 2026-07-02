@@ -86,6 +86,13 @@ Parrot works alone and plays well with others:
 | `oracle_enabled` | false | Ask a cross-vendor second opinion (codex/gemini CLI, if installed) at stalls and before GREEN — advisory only |
 | `best_of_n` | false | Experimental: at cycle 3, sample 2 alternative fixes and let the checker pick the winner (clean-baseline repos only) |
 
+If your Claude Code version's plugin-config UI doesn't persist these, edit the fallback file directly — parrot reads it on every run, no restart needed:
+
+```json
+// ~/.claude/plugins/data/parrot-parrot/config.json
+{ "max_cycles": 5, "profile": "", "oracle_enabled": false, "best_of_n": false }
+```
+
 ## Install
 
 ```
