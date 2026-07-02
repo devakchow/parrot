@@ -28,7 +28,7 @@ All state verbs take `--session ${CLAUDE_SESSION_ID}`. They print JSON; act on t
 
 ## Step 0 — Baseline
 
-1. `$STATE init-run --session ${CLAUDE_SESSION_ID} --project . <<'EOF'` (task text as stdin). Add `--allow-guarded` ONLY if the task explicitly asks to change tests or check configs. Note the printed `run_dir`.
+1. `$STATE init-run --session ${CLAUDE_SESSION_ID} --project . <<'EOF'` (task text as stdin). Add `--allow-guarded` ONLY if the task explicitly asks to change tests or check configs. The output includes the active **profile** (from `.parrot/profile.json`, default google — mention `/parrot:hire` in your final report if the project has never chosen one), its `gates` list, `max_cycles`, and the `run_dir`. Announce the team in one line: "parrot [profile]: <tagline>". The profile's gates apply at the Green gate; its rubrics reach the agents automatically.
 2. `$STATE snapshot-integrity ...` — hashes every test file and check config.
 3. Spawn `parrot:checker` (prompt: any check commands the task names, plus the pre-existing dirty list above).
 4. Pipe its report verbatim: `$STATE record-baseline ... <<'EOF'`. The output classifies checks into:
@@ -59,7 +59,8 @@ Pre-existing failures are noted but are not the builder's fault. They do not nee
 ## Green gate (before declaring success)
 
 1. `$STATE verify-integrity`. **FAIL** means a test file or check config changed since baseline behind the guards' back (e.g. via shell redirection) — escalate (E), `end-run --status TAMPER-HALT`, stop. ADVISORY (task-sanctioned changes) passes with the diff noted in the final report.
-2. **Spec review** — read the full `git diff` and compare against the task brief:
+2. **Profile gates** — walk the `gates` list from init-run against the final diff and checker report. A violated `blocking: true` gate is a failure: feed it to the builder as a failure report (counts as a cycle). Violated advisory gates go in the final report.
+3. **Spec review** — read the full `git diff` and compare against the task brief:
    - MISSING: anything the task asked for that the diff does not deliver.
    - UNREQUESTED: anything the diff delivers that the task did not ask for.
    Findings → feed them to the builder as a failure report (counts as a cycle). Clean → `$STATE end-run --status GREEN`.
