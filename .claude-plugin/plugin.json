@@ -13,21 +13,25 @@
   "userConfig": {
     "max_cycles": {
       "type": "number",
+      "title": "Max cycles",
       "description": "Builder dispatches per run before the loop hard-stops (default 5).",
       "default": 5
     },
     "profile": {
       "type": "string",
+      "title": "Profile override",
       "description": "Override the engineering profile for all projects (default: per-project .parrot/profile.json, falling back to google).",
       "default": ""
     },
     "oracle_enabled": {
       "type": "boolean",
+      "title": "Oracle second opinion",
       "description": "Ask a second-opinion model (codex/gemini CLI, if installed) at stall points and before GREEN.",
       "default": false
     },
     "best_of_n": {
       "type": "boolean",
+      "title": "Best-of-N (experimental)",
       "description": "Experimental: fork parallel builder candidates after repeated failed cycles.",
       "default": false
     }
