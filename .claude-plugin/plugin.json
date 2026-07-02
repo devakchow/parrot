@@ -5,6 +5,8 @@
   "author": {
     "name": "Devak Charapalle"
   },
+  "homepage": "https://github.com/devakchow/parrot",
+  "repository": "https://github.com/devakchow/parrot",
   "license": "MIT",
   "keywords": ["loop", "tdd", "verification", "agents", "orchestration"]
 }
