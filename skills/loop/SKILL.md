@@ -64,6 +64,24 @@ Run when the profile's `roles.planner` is `"on"`, or is `"auto-large"` and the t
    - **INVALID-REPORT** — respawn the checker once with the contract quoted; still invalid → treat as PROGRESS with a note in the ledger.
 5. **Ledger** — after every cycle: `$STATE append-ledger --cycle <n>` with a distilled entry from the builder's final report: attempted / result / hypotheses ruled out. Three lines, not a transcript.
 
+## Best-of-N (experimental; only when the `best_of_n` plugin setting is on)
+
+After a RED or STALLED verdict at cycle 3, instead of one more repair attempt, sample alternatives — each candidate consumes one cycle from the budget:
+
+1. For each of 2 candidates: builder brief = distilled ledger + a divergent-approach seed ("candidate A: <angle>", "candidate B: <different angle>") → spawn builder → spawn checker → `record-verdict` → `$STATE save-candidate --label <k>` (stashes the attempt, resetting to a clean base for the next candidate). If save-candidate answers UNSUPPORTED (dirty baseline), skip best-of-N entirely and continue the normal cycle.
+2. Compare recorded verdicts: most protected-checks passing wins; tie-break by fewer remaining failures, then smaller patch. `$STATE restore-candidate --label <winner>` and continue at the Green gate (or next cycle if still RED).
+
+## Oracle (advisory; only when the `oracle_enabled` plugin setting is on)
+
+At a STALLED verdict, and once at the Green gate, you may ask a cross-vendor second opinion:
+
+```
+echo "<distilled question: failing check, exact error, what was ruled out>" | \
+  python3 "${CLAUDE_PLUGIN_ROOT}/scripts/oracle.py"
+```
+
+The answer is advisory context for the next builder brief — it never gates, never overrides a stop rule, and `ORACLE: unavailable/disabled` just means proceed without it.
+
 ## Green gate (before declaring success)
 
 1. `$STATE verify-integrity`. **FAIL** means a test file or check config changed since baseline behind the guards' back (e.g. via shell redirection) — escalate (E), `end-run --status TAMPER-HALT`, stop. ADVISORY (task-sanctioned changes) passes with the diff noted in the final report.

@@ -1,6 +1,6 @@
 {
   "name": "parrot",
-  "description": "Builder/checker agent loop for Claude Code: implement, verify, fix until green, with hard stop rules.",
+  "description": "Hire a top-tier engineering team with deterministic guardrails: builder/checker loop, company engineering profiles, hook-enforced stop rules.",
   "owner": {
     "name": "Devak Charapalle"
   },
@@ -8,7 +8,7 @@
     {
       "name": "parrot",
       "source": "./",
-      "description": "Builder/checker agent loop with hard stop rules (max cycles, regression halt, test-weakening halt)."
+      "description": "Engineering-team loop with selectable company profiles (Google, Meta, Palantir, Jane Street, NASA/JPL, Stripe + SDL overlay). Deterministic guards: max cycles, regression halt, tamper halt, read-only reviewers, integrity hashing."
     }
   ]
 }

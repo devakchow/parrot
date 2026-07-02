@@ -385,6 +385,55 @@ def cmd_write_escalation(args) -> None:
     emit({"ok": True, "escalation": str(path)})
 
 
+def _candidate_stashes(project: Path) -> list:
+    """Returns [(index, label)] for parrot candidate stashes, newest first."""
+    entries = []
+    for line in git_lines(project, "stash", "list"):
+        # stash@{0}: On main: parrot-cand-<label>
+        if "parrot-cand-" in line:
+            index = int(line.split("stash@{", 1)[1].split("}", 1)[0])
+            label = line.rsplit("parrot-cand-", 1)[1].strip()
+            entries.append((index, label))
+    return entries
+
+
+def cmd_save_candidate(args) -> None:
+    """Stash the working tree as a best-of-N candidate, restoring a clean base."""
+    state = load_state(args.session)
+    project = Path(state["project"])
+    baseline = state.get("baseline") or {}
+    if baseline.get("changed_files"):
+        emit({"status": "UNSUPPORTED",
+              "reason": "best-of-N requires a clean tree at baseline; "
+                        "pre-existing dirty files present"})
+        return
+    diff = subprocess.run(["git", "-C", str(project), "diff", "HEAD"],
+                          capture_output=True, text=True, check=False).stdout
+    candidates_dir = run_dir(state) / "candidates"
+    candidates_dir.mkdir(exist_ok=True)
+    (candidates_dir / f"{args.label}.patch").write_text(diff)
+    git_lines(project, "add", "-A")
+    git_lines(project, "stash", "push", "-m", f"parrot-cand-{args.label}")
+    emit({"status": "SAVED", "label": args.label,
+          "patch": str(candidates_dir / f"{args.label}.patch")})
+
+
+def cmd_restore_candidate(args) -> None:
+    """Apply the winning candidate's stash and drop all candidate stashes."""
+    state = load_state(args.session)
+    project = Path(state["project"])
+    stashes = _candidate_stashes(project)
+    winner = next((i for i, label in stashes if label == args.label), None)
+    if winner is None:
+        fail(f"no candidate stash labeled {args.label!r}; "
+             f"have: {[label for _, label in stashes]}")
+    git_lines(project, "stash", "apply", f"stash@{{{winner}}}")
+    git_lines(project, "reset")  # unstage; leave a normal dirty tree
+    for index, _ in sorted(_candidate_stashes(project), reverse=True):
+        git_lines(project, "stash", "drop", f"stash@{{{index}}}")
+    emit({"status": "RESTORED", "label": args.label})
+
+
 def cmd_set_profile(args) -> None:
     project = Path(args.project).resolve()
     overlays = list(args.overlay or [])
@@ -454,6 +503,14 @@ def main() -> None:
         "--cycle": dict(type=int, required=True),
     })
     add("write-escalation", cmd_write_escalation, **{"--session": dict(required=True)})
+    add("save-candidate", cmd_save_candidate, **{
+        "--session": dict(required=True),
+        "--label": dict(required=True),
+    })
+    add("restore-candidate", cmd_restore_candidate, **{
+        "--session": dict(required=True),
+        "--label": dict(required=True),
+    })
     add("get-state", cmd_get_state, **{"--session": dict(required=True)})
     add("end-run", cmd_end_run, **{
         "--session": dict(required=True),
