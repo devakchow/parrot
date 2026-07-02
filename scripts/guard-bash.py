@@ -22,6 +22,8 @@ READ_ONLY_AGENTS = {
     "parrot:code-reviewer",
     "parrot:security-auditor",
 }
+# Agents that may write, but only inside .parrot/ artifacts.
+FENCED_WRITERS = {"parrot:planner", "parrot:memory-codifier"}
 
 # Commands that write to a path argument (builder: denied against guarded
 # paths; read-only agents: denied outright).
@@ -117,6 +119,19 @@ def check_read_only(agent: str, command: str) -> int:
     return 0
 
 
+def check_fenced(agent: str, command: str) -> int:
+    if not has_write_shape(command):
+        return 0
+    targets = write_targets(command)
+    if targets and all(".parrot" in Path(t).parts for t in targets):
+        return 0
+    return deny(
+        f"{agent.split(':')[1]} may write only inside .parrot/ "
+        f"(command: {command[:120]}). Propose other changes in your final "
+        "message instead."
+    )
+
+
 def main() -> int:
     payload = json.load(sys.stdin)
     debug_log(payload, "guard-bash")
@@ -126,6 +141,8 @@ def main() -> int:
         return check_builder(command)
     if agent in READ_ONLY_AGENTS:
         return check_read_only(agent, command)
+    if agent in FENCED_WRITERS:
+        return check_fenced(agent, command)
     return 0
 
 

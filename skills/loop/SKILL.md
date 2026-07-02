@@ -38,6 +38,14 @@ All state verbs take `--session ${CLAUDE_SESSION_ID}`. They print JSON; act on t
 
 Pre-existing failures are noted but are not the builder's fault. They do not need to go green unless the task says so — but they must not multiply.
 
+## Step P — Plan (profile-gated)
+
+Run when the profile's `roles.planner` is `"on"`, or is `"auto-large"` and the task is large (more than ~3 distinct deliverables, or the change plausibly touches 10+ files). Otherwise skip.
+
+1. Spawn `parrot:planner` with the task text and `run_dir`. If it answers `PLAN-UNNECESSARY`, proceed to the cycle.
+2. **Review inversion** — a bad plan line becomes hundreds of bad code lines, so the human checkpoint is here, not at the diff: if the plan has open questions OR the planner was triggered by auto-large, present the plan summary via AskUserQuestion (proceed as planned / adjust / cancel) before building.
+3. Give each cycle's builder the current increment from the plan's `## Increments`, not the whole task at once.
+
 ## Cycle (max 5 builder dispatches)
 
 1. **Builder brief** — assemble fresh each cycle (the builder has no memory; the ledger is its memory):
@@ -60,10 +68,15 @@ Pre-existing failures are noted but are not the builder's fault. They do not nee
 
 1. `$STATE verify-integrity`. **FAIL** means a test file or check config changed since baseline behind the guards' back (e.g. via shell redirection) — escalate (E), `end-run --status TAMPER-HALT`, stop. ADVISORY (task-sanctioned changes) passes with the diff noted in the final report.
 2. **Profile gates** — walk the `gates` list from init-run against the final diff and checker report. A violated `blocking: true` gate is a failure: feed it to the builder as a failure report (counts as a cycle). Violated advisory gates go in the final report.
-3. **Spec review** — read the full `git diff` and compare against the task brief:
-   - MISSING: anything the task asked for that the diff does not deliver.
-   - UNREQUESTED: anything the diff delivers that the task did not ask for.
-   Findings → feed them to the builder as a failure report (counts as a cycle). Clean → `$STATE end-run --status GREEN`.
+3. **Review chain** — dispatch the roles the profile staffs (from init-run's `active_roles`), in order; each gets the task text and, when a plan exists, the plan path:
+   - `spec_reviewer` on → spawn `parrot:spec-reviewer`; a FAIL verdict's MISSING/UNREQUESTED findings go to the builder as a failure report (counts as a cycle). If the role is off, do the spec review inline yourself: read the full `git diff` against the task brief for MISSING and UNREQUESTED features.
+   - `code_reviewer` on → spawn `parrot:code-reviewer`; blocking findings → builder failure report (counts as a cycle); advisories → final report.
+   - `security_auditor` on → spawn `parrot:security-auditor`; any FAIL is absolute (the security bug bar is never waived): if a builder cycle remains, route the findings; otherwise halt with the findings escalated.
+   All chain verdicts clean → `$STATE end-run --status GREEN`.
+
+## Step M — Memory (always, after end-run)
+
+If the profile's `roles.memory_codifier` is `"on"`: spawn `parrot:memory-codifier` with the `run_dir` and final status. Include its `Proposed CLAUDE.md addition:` lines (if any) in your final report — the human decides; nobody edits CLAUDE.md automatically.
 
 ## Step E — Escalation (every halt)
 

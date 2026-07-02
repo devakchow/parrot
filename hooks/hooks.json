@@ -42,7 +42,7 @@
     ],
     "SubagentStop": [
       {
-        "matcher": "^parrot:checker$",
+        "matcher": "^parrot:(checker|spec-reviewer|code-reviewer|security-auditor)$",
         "hooks": [
           {
             "type": "command",
