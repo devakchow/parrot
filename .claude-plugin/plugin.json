@@ -1,7 +1,7 @@
 {
   "name": "parrot",
   "displayName": "Parrot",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Hire a top-tier engineering team with deterministic guardrails: a builder/checker agent loop with selectable company profiles (Google, Meta, Palantir, Jane Street, NASA/JPL, Stripe), hook-enforced stop rules, and tamper-proof verification.",
   "author": {
     "name": "Devak Charapalle"
