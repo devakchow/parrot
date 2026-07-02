@@ -2,7 +2,6 @@
 name: hire
 description: Scan the codebase, recommend an engineering profile (Google, Meta, Palantir, Jane Street, NASA/JPL, Stripe), and hire that team for this project. Optionally stacks the Microsoft-SDL security overlay.
 argument-hint: [profile-name to skip the scan]
-disable-model-invocation: true
 disallowed-tools: Edit, Write, NotebookEdit
 ---
 

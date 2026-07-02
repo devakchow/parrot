@@ -2,7 +2,6 @@
 name: loop
 description: Run the builder/checker loop on a task until all checks pass. Hard stop after 5 cycles, on regression, on tamper, or on two stalled cycles.
 argument-hint: <task description>
-disable-model-invocation: true
 disallowed-tools: Edit, Write, NotebookEdit
 ---
 
