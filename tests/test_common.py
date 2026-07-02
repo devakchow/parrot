@@ -43,6 +43,16 @@ class TestGuardedKind:
     def test_unguarded(self, path):
         assert guarded_kind(path) is None
 
+    @pytest.mark.parametrize("path", [
+        "tests/__pycache__/test_app.cpython-312-pytest-7.4.4.pyc",
+        "tests/test_app.pyc",
+        ".pytest_cache/v/cache/lastfailed",
+        "tests/.mypy_cache/3.12/app.data.json",
+    ])
+    def test_generated_caches_never_guarded(self, path):
+        # caches churn on every test run; guarding them would fire false tamper
+        assert guarded_kind(path) is None
+
 
 class TestParser:
     def test_green_round_trip(self):

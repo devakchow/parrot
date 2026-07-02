@@ -34,12 +34,21 @@ CHECK_CONFIG_GLOBS = (
 )
 
 
+# Generated caches: never guarded, never integrity-hashed — they churn on every
+# test run and would produce false tamper verdicts.
+CACHE_DIR_SEGMENTS = {"__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache"}
+CACHE_FILE_SUFFIXES = (".pyc", ".pyo")
+
+
 def guarded_kind(path_str: str) -> Optional[str]:
     """Classify a path as guarded (test file / harness hook / check config) or None."""
     if not path_str:
         return None
     path = PurePath(path_str)
     name = path.name
+    if any(part in CACHE_DIR_SEGMENTS for part in path.parts) or \
+            name.endswith(CACHE_FILE_SUFFIXES):
+        return None
     if name in HARNESS_HOOK_FILES:
         return "a test-harness hook file"
     if any(part.lower() in TEST_DIR_SEGMENTS for part in path.parts[:-1]):
