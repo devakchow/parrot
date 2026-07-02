@@ -276,3 +276,19 @@ def plugin_data_dir():
     if env:
         return Path(env)
     return Path.home() / ".claude" / "plugins" / "data" / "parrot-parrot"
+
+
+def plugin_option(name: str, default):
+    """Resolve a user-config option: env (userConfig export) > config.json > default."""
+    env = os.environ.get(f"CLAUDE_PLUGIN_OPTION_{name.upper()}")
+    if env is not None:
+        return type(default)(env) if not isinstance(default, bool) else env.lower() in ("1", "true", "yes")
+    config = plugin_data_dir() / "config.json"
+    if config.exists():
+        try:
+            value = json.loads(config.read_text()).get(name)
+            if value is not None:
+                return value
+        except (json.JSONDecodeError, OSError):
+            pass  # malformed config falls through to the default
+    return default

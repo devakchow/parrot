@@ -1,12 +1,35 @@
 {
   "name": "parrot",
   "displayName": "Parrot",
-  "description": "Builder/checker agent loop: one agent implements, a separate agent verifies (tests, type checks, lint), and an orchestrator command cycles them until green. Hard stop rules: max 5 cycles, immediate halt on regression or test-weakening.",
+  "version": "2.0.0",
+  "description": "Hire a top-tier engineering team with deterministic guardrails: a builder/checker agent loop with selectable company profiles (Google, Meta, Palantir, Jane Street, NASA/JPL, Stripe), hook-enforced stop rules, and tamper-proof verification.",
   "author": {
     "name": "Devak Charapalle"
   },
   "homepage": "https://github.com/devakchow/parrot",
   "repository": "https://github.com/devakchow/parrot",
   "license": "MIT",
-  "keywords": ["loop", "tdd", "verification", "agents", "orchestration"]
+  "keywords": ["loop", "tdd", "verification", "agents", "orchestration", "profiles", "code-quality", "guardrails"],
+  "userConfig": {
+    "max_cycles": {
+      "type": "number",
+      "description": "Builder dispatches per run before the loop hard-stops (default 5).",
+      "default": 5
+    },
+    "profile": {
+      "type": "string",
+      "description": "Override the engineering profile for all projects (default: per-project .parrot/profile.json, falling back to google).",
+      "default": ""
+    },
+    "oracle_enabled": {
+      "type": "boolean",
+      "description": "Ask a second-opinion model (codex/gemini CLI, if installed) at stall points and before GREEN.",
+      "default": false
+    },
+    "best_of_n": {
+      "type": "boolean",
+      "description": "Experimental: fork parallel builder candidates after repeated failed cycles.",
+      "default": false
+    }
+  }
 }
